@@ -6,7 +6,6 @@ from typing import Any, Iterable, cast
 import httpx
 
 from schemas import Edge, ExtractResponse, Node, TimelineEvent
-from services.normalizer import normalize_llm_payload
 
 TIME_WORDS = ["昨天", "今天", "上周", "本周", "上个月", "今年", "后来", "随后"]
 ROLE_KEYWORDS = ["后端", "前端", "产品", "运营", "设计", "数据分析", "测试", "策划"]
@@ -240,7 +239,60 @@ def _extract_json_blob(content: str) -> dict[str, Any]:
 
 
 def _normalize_llm_output(payload: dict) -> ExtractResponse:
-    return normalize_llm_payload(payload).to_response()
+    raw_nodes = payload.get("nodes", [])
+    raw_edges = payload.get("edges", [])
+    raw_timeline = payload.get("timeline", [])
+
+    node_ids = set()
+    nodes = []
+    for item in raw_nodes:
+        node_id = str(item.get("id", "")).strip()
+        node_type = str(item.get("type", "")).strip() or "person"
+        if not node_id or node_id in node_ids:
+            continue
+        if node_type not in {"person", "organization", "project", "role"}:
+            continue
+        node_ids.add(node_id)
+        nodes.append(
+            Node(
+                id=node_id,
+                label=str(item.get("label") or node_id).strip(),
+                type=node_type,
+                description=(str(item.get("description")).strip() if item.get("description") is not None else None),
+            )
+        )
+
+    edges = []
+    edge_seen = set()
+    for item in raw_edges:
+        source = str(item.get("source", "")).strip()
+        target = str(item.get("target", "")).strip()
+        label = str(item.get("label", "")).strip()
+        key = (source, target, label)
+        if not source or not target or not label:
+            continue
+        if source not in node_ids or target not in node_ids or key in edge_seen:
+            continue
+        edge_seen.add(key)
+        edges.append(Edge(source=source, target=target, label=label))
+
+    timeline = []
+    for i, item in enumerate(raw_timeline, start=1):
+        related_nodes = [node for node in item.get("related_nodes", []) if node in node_ids]
+        timeline.append(
+            TimelineEvent(
+                id=str(item.get("id") or f"t{i}"),
+                label=str(item.get("label") or f"事件{i}"),
+                time=(str(item.get("time")).strip() if item.get("time") is not None else None),
+                detail=(str(item.get("detail")).strip() if item.get("detail") is not None else None),
+                related_nodes=related_nodes,
+            )
+        )
+
+    if not nodes:
+        raise ValueError("LLM output contained no valid nodes")
+
+    return ExtractResponse(nodes=nodes, edges=edges, timeline=timeline, extraction_mode="llm")
 
 
 
