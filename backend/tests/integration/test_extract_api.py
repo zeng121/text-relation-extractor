@@ -1,7 +1,9 @@
 import inspect
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
+from fastapi import Request
 
 from app import routes as routes_module
 from app.settings import LLM_API_KEY_ENV_VARS, Settings
@@ -15,12 +17,15 @@ async def test_extract_falls_back_to_rules_with_warning_when_llm_is_unavailable(
     for env_name in LLM_API_KEY_ENV_VARS:
         monkeypatch.delenv(env_name, raising=False)
 
-    request = SimpleNamespace(
-        app=SimpleNamespace(
-            state=SimpleNamespace(settings=Settings(llm_enabled=True)),
-        )
+    request = cast(
+        Request,
+        SimpleNamespace(
+            app=SimpleNamespace(
+                state=SimpleNamespace(settings=Settings(llm_enabled=True))
+            )
+        ),
     )
-    response = routes_module.extract(
+    response: Any = routes_module.extract(
         ExtractRequest(text="张三在字节跳动公司负责后端。"),
         request,
     )
