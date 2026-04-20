@@ -1,6 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
-from extractor import extract_graph
+from extractor import extract_graph, extract_graph_rules
 from schemas import ExtractRequest, ExtractResponse
 
 health_router = APIRouter()
@@ -13,5 +13,8 @@ def health_check() -> dict[str, str]:
 
 
 @extract_router.post("/extract", response_model=ExtractResponse)
-def extract(request: ExtractRequest) -> ExtractResponse:
-    return extract_graph(request.text)
+def extract(payload: ExtractRequest, request: Request) -> ExtractResponse:
+    settings = request.app.state.settings
+    if settings.llm_enabled:
+        return extract_graph(payload.text)
+    return extract_graph_rules(payload.text)

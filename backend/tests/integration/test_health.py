@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from schemas import ExtractResponse, Node
+
 
 def test_get_root_returns_backend_running_message(client: TestClient) -> None:
     response = client.get("/")
@@ -13,6 +15,26 @@ def test_post_extract_uses_existing_extraction_logic(client: TestClient) -> None
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["extraction_mode"] in {"llm", "rules", "fallback"}
-    assert isinstance(payload["nodes"], list)
-    assert isinstance(payload["edges"], list)
+    node_ids = {node["id"] for node in payload["nodes"]}
+    assert payload["extraction_mode"] == "rules"
+    assert node_ids >= {"张三", "字节跳动公司", "后端"}
+    assert {edge["label"] for edge in payload["edges"]} >= {"就职于", "负责"}
+    assert all(edge["source"] in node_ids for edge in payload["edges"])
+    assert all(edge["target"] in node_ids for edge in payload["edges"])
+
+
+def test_post_extract_respects_settings_and_skips_llm_path(client: TestClient, monkeypatch) -> None:
+    def _fake_llm_extract(_: str) -> ExtractResponse:
+        return ExtractResponse(
+            nodes=[Node(id="LLM", label="LLM", type="project")],
+            edges=[],
+            timeline=[],
+            extraction_mode="llm",
+        )
+
+    monkeypatch.setattr("extractor.extract_graph_llm", _fake_llm_extract)
+
+    response = client.post("/extract", json={"text": "张三在字节跳动公司负责后端。"})
+
+    assert response.status_code == 200
+    assert response.json()["extraction_mode"] == "rules"

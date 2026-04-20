@@ -1,12 +1,11 @@
 import json
 import os
 import re
-from typing import Iterable
+from typing import Any, Iterable, cast
 
 import httpx
 
 from schemas import Edge, ExtractResponse, Node, TimelineEvent
-
 
 TIME_WORDS = ["昨天", "今天", "上周", "本周", "上个月", "今年", "后来", "随后"]
 ROLE_KEYWORDS = ["后端", "前端", "产品", "运营", "设计", "数据分析", "测试", "策划"]
@@ -99,7 +98,7 @@ def _find_people(text: str) -> list[str]:
         r"([\u4e00-\u9fa5]{2,3})参与",
         r"([\u4e00-\u9fa5]{2,3})推进",
     ]
-    found = []
+    found: list[str] = []
     for pattern in patterns:
         for match in re.finditer(pattern, text):
             found.extend(group for group in match.groups() if group)
@@ -156,10 +155,10 @@ def extract_graph_rules(text: str) -> ExtractResponse:
     if not text:
         return EXAMPLE_GRAPH
 
-    nodes = []
-    edges = []
-    seen = set()
-    edge_seen = set()
+    nodes: list[Node] = []
+    edges: list[Edge] = []
+    seen: set[str] = set()
+    edge_seen: set[tuple[str, str, str]] = set()
 
     persons = _find_people(text)
     orgs = _find_orgs(text)
@@ -197,6 +196,7 @@ def extract_graph_rules(text: str) -> ExtractResponse:
 
     for match in re.finditer(r"([\u4e00-\u9fa5]{2,3}).{0,6}负责([\u4e00-\u9fa5A-Za-z0-9]{2,12})", text):
         person, raw_target = match.groups()
+        _add_node(nodes, seen, person, "person", "人物")
         role_target = next((keyword for keyword in ROLE_KEYWORDS if keyword in raw_target), None)
         if role_target:
             _add_node(nodes, seen, role_target, "role", "职责方向")
@@ -226,15 +226,15 @@ def extract_graph_rules(text: str) -> ExtractResponse:
 
 
 
-def _extract_json_blob(content: str) -> dict:
+def _extract_json_blob(content: str) -> dict[str, Any]:
     content = content.strip()
     try:
-        return json.loads(content)
+        return cast(dict[str, Any], json.loads(content))
     except json.JSONDecodeError:
         match = re.search(r"\{.*\}", content, re.S)
         if not match:
             raise
-        return json.loads(match.group(0))
+        return cast(dict[str, Any], json.loads(match.group(0)))
 
 
 

@@ -24,9 +24,9 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = ["extractor.py", "schemas.py"]
 
 [tool.ruff.lint]
+ignore = ["E501"]
 select = ["E", "F", "I"]
 
 [tool.mypy]
@@ -35,8 +35,3 @@ check_untyped_defs = true
 ignore_missing_imports = true
 warn_return_any = true
 warn_unused_ignores = true
-exclude = "(^|.*/)extractor\\.py$|(^|.*/)schemas\\.py$"
-
-[[tool.mypy.overrides]]
-module = ["extractor", "schemas"]
-ignore_errors = true
