@@ -252,7 +252,7 @@ describe('ui flow', () => {
   it('uses the updated default example text', () => {
     expect(EXAMPLES.default).toContain('2026年4月18日上午9点');
     expect(EXAMPLES.default).toContain('Atlas 知识中台');
-    expect(EXAMPLES.default).toContain('NVIDIA H100服务器');
+    expect(EXAMPLES.default).toContain('NVIDIA H100 服务器');
     expect(EXAMPLES.default).toContain('赵文杰确认接口规范');
   });
 
@@ -263,7 +263,7 @@ describe('ui flow', () => {
     expect(nodeIds).toContain('李明');
     expect(nodeIds).toContain('星澜科技');
     expect(nodeIds).toContain('Atlas 知识中台');
-    expect(nodeIds).toContain('NVIDIA H100服务器');
+    expect(nodeIds).toContain('NVIDIA H100 服务器');
     expect(nodeIds).not.toContain('张三');
     expect(edgeLabels).toContain('联合推进');
     expect(edgeLabels).toContain('采购');
