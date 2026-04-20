@@ -4,6 +4,7 @@ __pycache__/
 .python-version
 .uv/
 .DS_Store
+.codex
 .codex/
 .worktrees/
 worktrees/
