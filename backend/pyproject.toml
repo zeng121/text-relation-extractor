@@ -9,3 +9,34 @@ dependencies = [
   "pydantic==2.9.2",
   "uvicorn[standard]==0.30.6",
 ]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.18.2,<2",
+  "pytest>=8.4.2,<9",
+  "pytest-cov>=7.0.0,<8",
+  "ruff>=0.14.1,<0.15",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["extractor.py", "schemas.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_ignores = true
+exclude = "(^|.*/)extractor\\.py$|(^|.*/)schemas\\.py$"
+
+[[tool.mypy.overrides]]
+module = ["extractor", "schemas"]
+ignore_errors = true
