@@ -1,11 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>文本关系图谱生成器</title>
     <link rel="stylesheet" href="style.css" />
-    <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
   </head>
   <body>
     <div class="app">
@@ -20,7 +19,7 @@
           <option value="campus">校园活动</option>
         </select>
 
-        <textarea id="inputText">张三在字节跳动做后端，李四是张三的同事。两人上周一起负责电商项目，后来王五加入，负责前端。</textarea>
+        <textarea id="inputText"></textarea>
         <button id="generateBtn">生成图谱</button>
         <p id="status" class="status">准备好了，点按钮试试。</p>
       </aside>
@@ -47,6 +46,6 @@
       </aside>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

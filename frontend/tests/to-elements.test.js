@@ -6,7 +6,12 @@ describe('toElements', () => {
   it('maps nodes and edges to Cytoscape elements', () => {
     const data = {
       nodes: [
-        { id: '张三', label: '张三', type: 'person', description: '后端工程师' },
+        {
+          id: '张三',
+          label: '张三',
+          type: 'person',
+          description: '后端工程师',
+        },
         { id: '字节跳动', label: '字节跳动', type: 'organization' },
       ],
       edges: [{ source: '张三', target: '字节跳动', label: '就职于' }],
