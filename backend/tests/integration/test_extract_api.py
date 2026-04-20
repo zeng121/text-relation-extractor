@@ -1,40 +1,29 @@
-import inspect
-from types import SimpleNamespace
-from typing import Any, cast
-
+import httpx
 import pytest
-from fastapi import Request
 
-from app import routes as routes_module
-from app.settings import LLM_API_KEY_ENV_VARS, Settings
-from schemas import ExtractRequest
+from app.factory import create_app
+from app.settings import Settings
+from services.llm_extractor import OpenAICompatibleLLMExtractor
 
 
 @pytest.mark.anyio
-async def test_extract_falls_back_to_rules_with_warning_when_llm_is_unavailable(
-    monkeypatch,
-) -> None:
-    for env_name in LLM_API_KEY_ENV_VARS:
-        monkeypatch.delenv(env_name, raising=False)
+async def test_extract_falls_back_to_rules_with_warning_when_llm_fails(monkeypatch) -> None:
+    def _raise_on_extract(self, text: str):  # noqa: ANN001
+        raise RuntimeError("simulated llm failure")
 
-    request = cast(
-        Request,
-        SimpleNamespace(
-            app=SimpleNamespace(
-                state=SimpleNamespace(settings=Settings(llm_enabled=True))
-            )
-        ),
-    )
-    response: Any = routes_module.extract(
-        ExtractRequest(text="张三在字节跳动公司负责后端。"),
-        request,
-    )
-    if inspect.isawaitable(response):
-        response = await response
+    monkeypatch.setattr(OpenAICompatibleLLMExtractor, "extract", _raise_on_extract)
 
-    payload = response.model_dump()
+    transport = httpx.ASGITransport(app=create_app(settings=Settings(llm_enabled=True)))
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="http://testserver",
+    ) as client:
+        response = await client.post("/extract", json={"text": "张三在字节跳动公司负责后端。"})
+
+    assert response.status_code == 200
+    payload = response.json()
     assert payload["extraction_mode"] == "rules"
     assert payload["warnings"]
-    assert "LLM" in payload["warnings"][0]
+    assert "LLM extraction failed" in payload["warnings"][0]
     node_ids = {node["id"] for node in payload["nodes"]}
     assert node_ids >= {"张三", "字节跳动公司", "后端"}

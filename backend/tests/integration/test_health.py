@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from schemas import ExtractResponse, Node
+from services.llm_extractor import OpenAICompatibleLLMExtractor
 
 
 @pytest.mark.anyio
@@ -31,17 +31,17 @@ async def test_post_extract_respects_settings_and_skips_llm_path(
     client: httpx.AsyncClient,
     monkeypatch,
 ) -> None:
-    def _fake_llm_extract(_: str) -> ExtractResponse:
-        return ExtractResponse(
-            nodes=[Node(id="LLM", label="LLM", type="project")],
-            edges=[],
-            timeline=[],
-            extraction_mode="llm",
-        )
+    llm_called = False
 
-    monkeypatch.setattr("extractor.extract_graph_llm", _fake_llm_extract)
+    def _raise_if_called(self, text: str):  # noqa: ANN001
+        nonlocal llm_called
+        llm_called = True
+        raise AssertionError("LLM extractor should not be called when llm_enabled=False")
+
+    monkeypatch.setattr(OpenAICompatibleLLMExtractor, "extract", _raise_if_called)
 
     response = await client.post("/extract", json={"text": "张三在字节跳动公司负责后端。"})
 
     assert response.status_code == 200
     assert response.json()["extraction_mode"] == "rules"
+    assert not llm_called
