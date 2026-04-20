@@ -96,10 +96,16 @@ describe('ui flow', () => {
     );
   });
 
-  it('renders a readable error message when extraction fails', async () => {
+  it('renders a readable server error message when extraction fails', async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: false,
       status: 503,
+      json: async () => ({
+        detail: {
+          code: 'internal_error',
+          message: 'An unexpected error occurred.',
+        },
+      }),
     }));
     const graphRenderer = vi.fn();
 
@@ -112,7 +118,30 @@ describe('ui flow', () => {
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(document.getElementById('status').textContent).toBe(
-      '出错了：HTTP 503',
+      '出错了：An unexpected error occurred.',
+    );
+    expect(document.getElementById('modeBadge').textContent).toContain('-');
+    expect(document.getElementById('warningList').textContent).toContain(
+      '告警：无',
+    );
+  });
+
+  it('renders a readable network error message when fetch rejects', async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new Error('网络请求失败，请稍后重试。');
+    });
+    const graphRenderer = vi.fn();
+
+    const app = createApp({ fetchImpl, graphRenderer });
+    app.bootstrap();
+
+    document.getElementById('inputText').value = '张三加入项目';
+    document.getElementById('generateBtn').click();
+    await flushMicrotasks();
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(document.getElementById('status').textContent).toBe(
+      '出错了：网络请求失败，请稍后重试。',
     );
     expect(document.getElementById('modeBadge').textContent).toContain('-');
     expect(document.getElementById('warningList').textContent).toContain(
