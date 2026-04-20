@@ -629,7 +629,7 @@ wheels = [
 ]
 
 [[package]]
-name = "text-graph-mvp-backend"
+name = "text-relation-extractor-backend"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

@@ -1,5 +1,5 @@
 [project]
-name = "text-graph-mvp-backend"
+name = "text-relation-extractor-backend"
 version = "0.1.0"
 description = "Backend for a text relationship graph MVP"
 requires-python = ">=3.11"

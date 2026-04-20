@@ -1,4 +1,4 @@
-# Text Graph MVP Production-Grade Engineering Upgrade Design
+# Text Relation Extractor Production-Grade Engineering Upgrade Design
 
 ## Context
 
@@ -218,7 +218,7 @@ The README should explain:
 ## Proposed Directory Shape
 
 ```text
-text-graph-mvp/
+text-relation-extractor/
 ├── .github/
 │   └── workflows/
 ├── backend/

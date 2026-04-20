@@ -1,4 +1,4 @@
-# Text Graph MVP
+# Text Relation Extractor
 
 Local-first full-stack app for turning free-form Chinese text into a relationship graph, timeline, and structured JSON output.
 
@@ -12,7 +12,7 @@ The frontend is a Vite app that submits text to the backend and renders the resp
 ## Architecture
 
 ```text
-text-graph-mvp/
+text-relation-extractor/
 ├── backend/
 │   ├── app/                 # FastAPI factory, routes, settings, logging, errors
 │   ├── domain/              # Shared extraction models and contracts

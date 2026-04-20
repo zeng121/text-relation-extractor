@@ -75,7 +75,7 @@ def _build_headers(base_url: str, api_key: str) -> dict[str, str]:
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     if "openrouter.ai" in base_url:
         headers["HTTP-Referer"] = "http://localhost:5500"
-        headers["X-Title"] = "text-graph-mvp"
+        headers["X-Title"] = "text-relation-extractor"
     return headers
 
 

@@ -9,7 +9,7 @@ from app.settings import Settings
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     configure_logging()
-    app = FastAPI(title="Text Graph MVP")
+    app = FastAPI(title="Text Relation Extractor")
     app.state.settings = settings or Settings()
     app.add_middleware(
         CORSMiddleware,
