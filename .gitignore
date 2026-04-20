@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.python-version
+.uv/
+.DS_Store
+.codex/
+.worktrees/
+worktrees/

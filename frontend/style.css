@@ -1,0 +1,140 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #111827;
+  color: #f3f4f6;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 320px 1fr 380px;
+  height: 100vh;
+}
+
+.panel {
+  padding: 20px;
+  border-right: 1px solid #374151;
+  overflow: auto;
+}
+
+.input-panel,
+.result-panel {
+  background: #1f2937;
+}
+
+.graph-panel {
+  padding: 0;
+  background: #0b1220;
+}
+
+h1,
+h2 {
+  margin-top: 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #cbd5e1;
+}
+
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #4b5563;
+  border-radius: 10px;
+  background: #111827;
+  color: #f9fafb;
+}
+
+select {
+  padding: 10px 12px;
+  margin: 12px 0 8px;
+}
+
+textarea {
+  height: 240px;
+  margin: 12px 0 16px;
+  padding: 12px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #3b82f6;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+.status {
+  margin-top: 12px;
+  color: #93c5fd;
+}
+
+#graph {
+  width: 100%;
+  height: 100vh;
+}
+
+.card,
+.timeline,
+pre {
+  background: #111827;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.card,
+.timeline {
+  min-height: 96px;
+}
+
+.timeline {
+  display: grid;
+  gap: 10px;
+}
+
+.timeline-item {
+  border-left: 3px solid #3b82f6;
+  padding-left: 10px;
+}
+
+.timeline-time {
+  font-size: 12px;
+  color: #93c5fd;
+  margin-bottom: 4px;
+}
+
+.timeline-detail {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 220px;
+  overflow: auto;
+}
+
+.muted {
+  color: #94a3b8;
+}
+
+section {
+  margin-bottom: 20px;
+}
