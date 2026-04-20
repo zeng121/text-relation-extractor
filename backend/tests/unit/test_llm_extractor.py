@@ -8,3 +8,5 @@ def test_prompt_is_english_and_preserves_json_contract() -> None:
         "person, organization, project, role, document, artifact, resource, spec, "
         "hardware, deliverable, other"
     ) in PROMPT
+    assert "Every node referenced by any edge must also appear in nodes." in PROMPT
+    assert "Before returning JSON, verify that there are no dangling edges." in PROMPT

@@ -3,7 +3,7 @@ import pytest
 from services.normalizer import normalize_llm_payload
 
 
-def test_normalize_llm_payload_discards_dangling_edges() -> None:
+def test_normalize_llm_payload_auto_creates_missing_nodes_for_dangling_edges() -> None:
     payload = {
         "nodes": [
             {"id": "n1", "label": "Node 1", "type": "person"},
@@ -19,10 +19,13 @@ def test_normalize_llm_payload_discards_dangling_edges() -> None:
 
     result = normalize_llm_payload(payload)
 
-    assert len(result.edges) == 1
-    assert result.edges[0].source == "n1"
-    assert result.edges[0].target == "n2"
-    assert result.warnings
+    assert len(result.edges) == 3
+    assert {(node.id, node.type) for node in result.nodes} >= {
+        ("n1", "person"),
+        ("n2", "project"),
+        ("missing", "other"),
+    }
+    assert result.warnings == ["missing nodes were auto-created for referenced edges"]
 
 
 def test_normalize_llm_payload_raises_when_no_valid_nodes() -> None:
@@ -94,3 +97,27 @@ def test_normalize_llm_payload_maps_unknown_node_types_to_other() -> None:
     assert [(edge.source, edge.target, edge.label) for edge in result.edges] == [
         ("n1", "n2", "支持")
     ]
+
+
+def test_normalize_llm_payload_infers_types_for_auto_created_missing_nodes() -> None:
+    payload = {
+        "nodes": [{"id": "周琪", "label": "周琪", "type": "person"}],
+        "edges": [
+            {
+                "source": "周琪",
+                "target": "关系抽取模型评估报告",
+                "label": "提交",
+            },
+            {"source": "周琪", "target": "接口规范", "label": "确认"},
+            {"source": "周琪", "target": "NVIDIA H100服务器", "label": "使用"},
+        ],
+        "timeline": [],
+    }
+
+    result = normalize_llm_payload(payload)
+
+    inferred_types = {node.id: node.type for node in result.nodes}
+    assert inferred_types["关系抽取模型评估报告"] == "document"
+    assert inferred_types["接口规范"] == "spec"
+    assert inferred_types["NVIDIA H100服务器"] == "hardware"
+    assert len(result.edges) == 3

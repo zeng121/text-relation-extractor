@@ -28,9 +28,12 @@ Requirements:
 1. type must be one of person, organization, project, role, document, artifact, resource, spec, hardware, deliverable, other.
 2. nodes.id must be unique.
 3. edges.source and edges.target must reference existing node ids.
-4. timeline may be an empty array if the input does not contain enough information.
-5. Extract concrete people, organizations, projects, roles, and related entities when supported by the text. Do not fabricate facts.
-6. Return JSON only.
+4. Every node referenced by any edge must also appear in nodes.
+5. Include non-person/non-organization entities when they participate in relationships, especially reports, specs, documents, hardware, resources, and deliverables.
+6. Before returning JSON, verify that there are no dangling edges.
+7. timeline may be an empty array if the input does not contain enough information.
+8. Extract concrete people, organizations, projects, roles, and related entities when supported by the text. Do not fabricate facts.
+9. Return JSON only.
 """.strip()
 
 

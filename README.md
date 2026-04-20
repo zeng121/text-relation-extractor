@@ -9,6 +9,8 @@ The backend is a FastAPI service that chooses an extractor strategy at runtime:
 
 The frontend is a Vite app that submits text to the backend and renders the response as a graph, timeline, status panel, and raw JSON.
 
+![UI overview](assets/ui-overview.png)
+
 ## Architecture
 
 ```text
