@@ -32,7 +32,11 @@ def normalize_llm_payload(payload: Mapping[str, Any]) -> ExtractionResult:
                 id=node_id,
                 label=str(item.get("label") or node_id).strip(),
                 type=cast(NodeType, node_type),
-                description=(str(item.get("description")).strip() if item.get("description") else None),
+                description=(
+                    str(item.get("description")).strip()
+                    if item.get("description") is not None
+                    else None
+                ),
             )
         )
 
