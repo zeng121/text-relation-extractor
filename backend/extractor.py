@@ -5,6 +5,7 @@ from typing import Any, Iterable, cast
 
 import httpx
 
+from domain.models import ExtractionResult
 from schemas import Edge, ExtractResponse, Node, TimelineEvent
 from services.normalizer import normalize_llm_payload
 
@@ -240,7 +241,28 @@ def _extract_json_blob(content: str) -> dict[str, Any]:
 
 
 def _normalize_llm_output(payload: dict) -> ExtractResponse:
-    return normalize_llm_payload(payload).to_response()
+    return _to_extract_response(normalize_llm_payload(payload))
+
+
+def _to_extract_response(result: ExtractionResult) -> ExtractResponse:
+    return ExtractResponse(
+        nodes=[
+            Node(id=node.id, label=node.label, type=node.type, description=node.description)
+            for node in result.nodes
+        ],
+        edges=[Edge(source=edge.source, target=edge.target, label=edge.label) for edge in result.edges],
+        timeline=[
+            TimelineEvent(
+                id=event.id,
+                label=event.label,
+                time=event.time,
+                detail=event.detail,
+                related_nodes=event.related_nodes,
+            )
+            for event in result.timeline
+        ],
+        extraction_mode=result.extraction_mode,
+    )
 
 
 

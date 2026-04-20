@@ -1,5 +1,8 @@
-from schemas import ExtractResponse
+from typing import Protocol
+
+from domain.models import ExtractionResult
 
 
-def extract_graph_rules(text: str) -> ExtractResponse:
-    raise NotImplementedError("Task 3 will provide rule extractor wiring")
+class RuleExtractor(Protocol):
+    def extract(self, text: str) -> ExtractionResult:
+        ...

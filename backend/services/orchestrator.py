@@ -1,5 +1,8 @@
-from schemas import ExtractResponse
+from typing import Protocol
+
+from domain.models import ExtractionResult
 
 
-def extract_graph(text: str) -> ExtractResponse:
-    raise NotImplementedError("Task 3 will provide orchestration flow")
+class Orchestrator(Protocol):
+    def extract(self, text: str) -> ExtractionResult:
+        ...
