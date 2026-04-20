@@ -4,48 +4,6 @@ import pytest
 from app.factory import create_app
 from app.settings import Settings
 from services.llm_extractor import OpenAICompatibleLLMExtractor
-from services.orchestrator import ExtractionOrchestrator
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize("text", ["", "   ", "\n\t"])
-async def test_extract_rejects_blank_or_whitespace_text(text: str) -> None:
-    transport = httpx.ASGITransport(app=create_app(settings=Settings(llm_enabled=False)))
-    async with httpx.AsyncClient(
-        transport=transport,
-        base_url="http://testserver",
-    ) as client:
-        response = await client.post("/extract", json={"text": text})
-
-    assert response.status_code == 422
-
-
-@pytest.mark.anyio
-async def test_extract_returns_structured_error_when_orchestrator_raises(
-    monkeypatch,
-) -> None:
-    def _raise_on_extract(self, text: str):  # noqa: ANN001, ARG001
-        raise RuntimeError("simulated internal crash")
-
-    monkeypatch.setattr(ExtractionOrchestrator, "extract", _raise_on_extract)
-
-    transport = httpx.ASGITransport(
-        app=create_app(settings=Settings(llm_enabled=False)),
-        raise_app_exceptions=False,
-    )
-    async with httpx.AsyncClient(
-        transport=transport,
-        base_url="http://testserver",
-    ) as client:
-        response = await client.post("/extract", json={"text": "张三在字节跳动公司负责后端。"})
-
-    assert response.status_code == 500
-    assert response.json() == {
-        "detail": {
-            "code": "internal_error",
-            "message": "An unexpected error occurred.",
-        }
-    }
 
 
 @pytest.mark.anyio

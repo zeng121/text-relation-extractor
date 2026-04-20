@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request
 
-from app.logging import get_logger
 from schemas import ExtractRequest, ExtractResponse
 from services.llm_extractor import OpenAICompatibleLLMExtractor
 from services.orchestrator import ExtractionOrchestrator
@@ -8,7 +7,6 @@ from services.rule_extractor import RegexRuleExtractor
 
 health_router = APIRouter()
 extract_router = APIRouter()
-logger = get_logger(__name__)
 
 
 @health_router.get("/")
@@ -24,10 +22,4 @@ async def extract(payload: ExtractRequest, request: Request) -> ExtractResponse:
         llm_extractor=OpenAICompatibleLLMExtractor(),
         rule_extractor=RegexRuleExtractor(),
     )
-    result = orchestrator.extract(payload.text)
-    if result.warnings:
-        logger.warning(
-            "Extraction completed with warnings",
-            extra={"warnings": result.warnings, "extraction_mode": result.extraction_mode},
-        )
-    return ExtractResponse.from_result(result)
+    return ExtractResponse.from_result(orchestrator.extract(payload.text))

@@ -1,19 +1,12 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from domain.models import ExtractionResult
 
 
 class ExtractRequest(BaseModel):
     text: str
-
-    @field_validator("text")
-    @classmethod
-    def validate_text_not_blank(cls, value: str) -> str:
-        if not value.strip():
-            raise ValueError("text must not be blank")
-        return value
 
 
 class Node(BaseModel):
