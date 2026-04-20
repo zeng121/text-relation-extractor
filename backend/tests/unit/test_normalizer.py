@@ -46,3 +46,51 @@ def test_normalize_llm_payload_preserves_falsey_description_values() -> None:
     result = normalize_llm_payload(payload)
 
     assert [node.description for node in result.nodes] == ["", "0", "False"]
+
+
+def test_normalize_llm_payload_preserves_supported_extended_node_types() -> None:
+    payload = {
+        "nodes": [
+            {"id": "doc-1", "label": "需求文档", "type": "document"},
+            {"id": "spec-1", "label": "接口规范", "type": "spec"},
+            {"id": "hw-1", "label": "GPU 服务器", "type": "hardware"},
+            {"id": "res-1", "label": "对象存储", "type": "resource"},
+            {"id": "del-1", "label": "上线包", "type": "deliverable"},
+            {"id": "art-1", "label": "构建产物", "type": "artifact"},
+        ],
+        "edges": [
+            {"source": "doc-1", "target": "spec-1", "label": "约束"},
+            {"source": "hw-1", "target": "art-1", "label": "生成"},
+        ],
+        "timeline": [],
+    }
+
+    result = normalize_llm_payload(payload)
+
+    assert [node.type for node in result.nodes] == [
+        "document",
+        "spec",
+        "hardware",
+        "resource",
+        "deliverable",
+        "artifact",
+    ]
+    assert len(result.edges) == 2
+
+
+def test_normalize_llm_payload_maps_unknown_node_types_to_other() -> None:
+    payload = {
+        "nodes": [
+            {"id": "n1", "label": "测试夹具", "type": "fixture"},
+            {"id": "n2", "label": "交付件", "type": "deliverable"},
+        ],
+        "edges": [{"source": "n1", "target": "n2", "label": "支持"}],
+        "timeline": [],
+    }
+
+    result = normalize_llm_payload(payload)
+
+    assert [node.type for node in result.nodes] == ["other", "deliverable"]
+    assert [(edge.source, edge.target, edge.label) for edge in result.edges] == [
+        ("n1", "n2", "支持")
+    ]

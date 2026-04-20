@@ -2,7 +2,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { EXAMPLES } from '../src/utils/examples.js';
+import { DEFAULT_GRAPH_DATA, EXAMPLES } from '../src/utils/examples.js';
 import { createApp } from '../src/main.js';
 
 async function flushMicrotasks(times = 6) {
@@ -247,5 +247,25 @@ describe('ui flow', () => {
     select.dispatchEvent(new Event('change'));
 
     expect(document.getElementById('inputText').value).toBe(EXAMPLES.startup);
+  });
+
+  it('uses the updated default example text', () => {
+    expect(EXAMPLES.default).toContain('2026年4月18日上午9点');
+    expect(EXAMPLES.default).toContain('Atlas 知识中台');
+    expect(EXAMPLES.default).toContain('NVIDIA H100服务器');
+    expect(EXAMPLES.default).toContain('赵文杰确认接口规范');
+  });
+
+  it('uses synced default graph data for the updated example', () => {
+    const nodeIds = DEFAULT_GRAPH_DATA.nodes.map((node) => node.id);
+    const edgeLabels = DEFAULT_GRAPH_DATA.edges.map((edge) => edge.label);
+
+    expect(nodeIds).toContain('李明');
+    expect(nodeIds).toContain('星澜科技');
+    expect(nodeIds).toContain('Atlas 知识中台');
+    expect(nodeIds).toContain('NVIDIA H100服务器');
+    expect(nodeIds).not.toContain('张三');
+    expect(edgeLabels).toContain('联合推进');
+    expect(edgeLabels).toContain('采购');
   });
 });

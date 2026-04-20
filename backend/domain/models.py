@@ -1,7 +1,19 @@
 from dataclasses import dataclass, field
 from typing import Literal
 
-NodeType = Literal["person", "organization", "project", "role"]
+NodeType = Literal[
+    "person",
+    "organization",
+    "project",
+    "role",
+    "document",
+    "artifact",
+    "resource",
+    "spec",
+    "hardware",
+    "deliverable",
+    "other",
+]
 
 
 @dataclass(slots=True, frozen=True)

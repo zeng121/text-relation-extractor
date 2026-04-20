@@ -69,6 +69,34 @@ export function createGraphRenderer({
             selector: 'node[type = "role"]',
             style: { 'background-color': '#f472b6' },
           },
+          {
+            selector: 'node[type = "document"]',
+            style: { 'background-color': '#38bdf8' },
+          },
+          {
+            selector: 'node[type = "artifact"]',
+            style: { 'background-color': '#818cf8' },
+          },
+          {
+            selector: 'node[type = "resource"]',
+            style: { 'background-color': '#22c55e' },
+          },
+          {
+            selector: 'node[type = "spec"]',
+            style: { 'background-color': '#06b6d4' },
+          },
+          {
+            selector: 'node[type = "hardware"]',
+            style: { 'background-color': '#ef4444' },
+          },
+          {
+            selector: 'node[type = "deliverable"]',
+            style: { 'background-color': '#eab308' },
+          },
+          {
+            selector: 'node[type = "other"]',
+            style: { 'background-color': '#94a3b8' },
+          },
         ],
         layout: {
           name: 'cose',

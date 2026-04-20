@@ -8,7 +8,20 @@ from domain.models import (
     NodeType,
 )
 
-VALID_NODE_TYPES = {"person", "organization", "project", "role"}
+VALID_NODE_TYPES = {
+    "person",
+    "organization",
+    "project",
+    "role",
+    "document",
+    "artifact",
+    "resource",
+    "spec",
+    "hardware",
+    "deliverable",
+    "other",
+}
+FALLBACK_NODE_TYPE = "other"
 
 
 def normalize_llm_payload(payload: Mapping[str, Any]) -> ExtractionResult:
@@ -22,16 +35,17 @@ def normalize_llm_payload(payload: Mapping[str, Any]) -> ExtractionResult:
     for item in raw_nodes:
         node_id = str(item.get("id", "")).strip()
         node_type = str(item.get("type", "")).strip() or "person"
+        normalized_node_type = (
+            node_type if node_type in VALID_NODE_TYPES else FALLBACK_NODE_TYPE
+        )
         if not node_id or node_id in node_ids:
-            continue
-        if node_type not in VALID_NODE_TYPES:
             continue
         node_ids.add(node_id)
         nodes.append(
             ExtractedNode(
                 id=node_id,
                 label=str(item.get("label") or node_id).strip(),
-                type=cast(NodeType, node_type),
+                type=cast(NodeType, normalized_node_type),
                 description=(
                     str(item.get("description")).strip()
                     if item.get("description") is not None

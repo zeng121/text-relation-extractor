@@ -74,7 +74,7 @@ The frontend targets `http://127.0.0.1:8000` by default.
 
 ## Environment Variables
 
-The backend reads environment variables directly from the shell. `.env.example` is a reference template only; it is not auto-loaded by the app.
+The backend auto-loads environment variables from the repository root `.env` file when the app starts. Shell-exported environment variables still win over `.env` values, so local overrides and CI secrets keep working.
 
 Supported provider keys, checked in priority order:
 - `OPENAI_API_KEY`
@@ -94,12 +94,27 @@ Example:
 
 ```bash
 cp .env.example .env
-set -a
-source .env
-set +a
 ```
 
-If no supported API key is exported, the backend stays in rules-only mode.
+If no supported API key is available through either `.env` or the shell environment, the backend stays in rules-only mode.
+
+## Supported Entity Types
+
+The backend and frontend graph currently support these node types:
+
+- `person`
+- `organization`
+- `project`
+- `role`
+- `document`
+- `artifact`
+- `resource`
+- `spec`
+- `hardware`
+- `deliverable`
+- `other`
+
+If an LLM returns an unrecognized node type, the backend now preserves the node by mapping it to `other` instead of discarding it and dropping its related edges.
 
 ## API Contract
 

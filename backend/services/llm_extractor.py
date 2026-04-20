@@ -9,9 +9,9 @@ from domain.models import ExtractionResult
 from services.normalizer import normalize_llm_payload
 
 PROMPT = """
-你是一个信息抽取器。请从用户输入的中文文本中抽取关系图谱，并严格返回 JSON，不要输出任何解释。
+You are an information extractor. Extract a relationship graph from the user's Chinese input and return strict JSON with no explanation.
 
-返回格式必须是：
+The response must use this format:
 {
   "nodes": [
     {"id": "张三", "label": "张三", "type": "person", "description": "后端工程师"}
@@ -24,13 +24,13 @@ PROMPT = """
   ]
 }
 
-要求：
-1. type 只能是 person, organization, project, role 之一。
-2. nodes.id 必须唯一。
-3. edges 的 source/target 必须引用 nodes 里已有 id。
-4. 如果信息不足，timeline 可以返回空数组。
-5. 尽量抽取明确的人物、组织、项目、职责，不要编造。
-6. 只返回 JSON。
+Requirements:
+1. type must be one of person, organization, project, role, document, artifact, resource, spec, hardware, deliverable, other.
+2. nodes.id must be unique.
+3. edges.source and edges.target must reference existing node ids.
+4. timeline may be an empty array if the input does not contain enough information.
+5. Extract concrete people, organizations, projects, roles, and related entities when supported by the text. Do not fabricate facts.
+6. Return JSON only.
 """.strip()
 
 

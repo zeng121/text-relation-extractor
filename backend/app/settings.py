@@ -1,4 +1,7 @@
 import os
+from pathlib import Path
+
+DEFAULT_ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 
 LLM_API_KEY_ENV_VARS = (
     "OPENAI_API_KEY",
@@ -14,8 +17,31 @@ LLM_API_KEY_ENV_VARS = (
 )
 
 
+def load_env_file(env_path: Path = DEFAULT_ENV_PATH) -> None:
+    if not env_path.exists():
+        return
+
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[7:].strip()
+        if "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("\"'")
+        if key:
+            os.environ.setdefault(key, value)
+
+
 def _has_any_llm_api_key() -> bool:
     return any(os.getenv(env_var) for env_var in LLM_API_KEY_ENV_VARS)
+
+
+load_env_file()
 
 
 class Settings:
