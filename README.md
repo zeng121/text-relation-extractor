@@ -1,81 +1,169 @@
-# 文本关系图谱生成器 MVP
+# Text Graph MVP
 
-一个很轻量的全栈玩具项目：输入一段文本，后端提取人物/组织/项目及其关系，前端用 Cytoscape.js 把它画出来。
+Local-first full-stack app for turning free-form Chinese text into a relationship graph, timeline, and structured JSON output.
 
-## 目录结构
+The backend is a FastAPI service that chooses an extractor strategy at runtime:
+- Rule extraction when no LLM credentials are configured.
+- LLM extraction when a supported provider key is present.
+- Automatic fallback to rule extraction when the LLM path fails.
+
+The frontend is a Vite app that submits text to the backend and renders the response as a graph, timeline, status panel, and raw JSON.
+
+## Architecture
 
 ```text
 text-graph-mvp/
 ├── backend/
-│   ├── main.py
-│   ├── extractor.py
-│   ├── schemas.py
-│   ├── pyproject.toml
-│   └── uv.lock
+│   ├── app/                 # FastAPI factory, routes, settings, logging, errors
+│   ├── domain/              # Shared extraction models and contracts
+│   ├── services/            # Rule extractor, LLM extractor, orchestrator, normalization
+│   ├── tests/               # pytest unit and integration coverage
+│   ├── main.py              # ASGI entrypoint
+│   └── pyproject.toml       # Python dependencies and tool config
 ├── frontend/
-│   ├── index.html
-│   ├── style.css
-│   └── app.js
-├── .gitignore
-└── README.md
+│   ├── src/
+│   │   ├── api/             # Backend request layer
+│   │   ├── components/      # UI renderers and bindings
+│   │   ├── graph/           # Cytoscape renderer
+│   │   ├── state/           # Frontend state transitions
+│   │   └── utils/           # Example data and helpers
+│   ├── tests/               # Vitest coverage
+│   ├── package.json         # Frontend scripts
+│   └── vite.config.js       # Dev server and test config
+├── .env.example             # Shell template for optional backend env vars
+├── .editorconfig
+├── CONTRIBUTING.md
+└── .github/workflows/ci.yml
 ```
 
-## 运行方式
+## Requirements
 
-### 1. 启动后端（uv）
+- Python 3.11+
+- `uv`
+- Node.js 18.18+
+- npm
+
+## Local Development
+
+### 1. Backend
 
 ```bash
 cd backend
-uv sync
+uv sync --dev
 uv run uvicorn main:app --reload
 ```
 
-后端地址：
-- http://127.0.0.1:8000
-- 文档：http://127.0.0.1:8000/docs
+Backend URLs:
+- API: `http://127.0.0.1:8000`
+- OpenAPI docs: `http://127.0.0.1:8000/docs`
 
-### 2. 启动前端
+### 2. Frontend
+
+In a second terminal:
 
 ```bash
 cd frontend
-python -m http.server 5500
+npm ci
+npm run dev
 ```
 
-然后打开：
-- http://127.0.0.1:5500
+Frontend URL:
+- App: `http://127.0.0.1:5173`
 
-## Git 初始化
+The frontend targets `http://127.0.0.1:8000` by default.
+
+## Environment Variables
+
+The backend reads environment variables directly from the shell. `.env.example` is a reference template only; it is not auto-loaded by the app.
+
+Supported provider keys, checked in priority order:
+- `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY`
+- `GEMINI_API_KEY`
+- `GOOGLE_API_KEY`
+- `GLM_API_KEY`
+- `KIMI_API_KEY`
+- `MINIMAX_API_KEY`
+- `OPENCODE_ZEN_API_KEY`
+- `OPENCODE_GO_API_KEY`
+- `HF_TOKEN`
+
+Optional provider-specific overrides are also supported through matching `*_BASE_URL` and `*_MODEL` variables in `.env.example`.
+
+Example:
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
+cp .env.example .env
+set -a
+source .env
+set +a
 ```
 
-## 依赖管理
+If no supported API key is exported, the backend stays in rules-only mode.
 
-这个项目的 Python 后端现在只用 `uv` 管理依赖，不再维护 `requirements.txt`。
+## API Contract
 
-## 已完成的升级
+### `GET /`
 
-1. 节点点击详情面板
-2. 时间线事件展示
-3. 前端示例文本切换
-4. 更丰富一点的规则抽取（就职于 / 同事 / 参与 / 负责）
-5. 后端优先走 OpenAI 兼容 LLM 抽取，失败时自动回退到规则抽取
+Health check response:
 
-## 抽取策略
+```json
+{"message":"backend is running"}
+```
 
-- 默认优先调用可用的 OpenAI 兼容接口（按环境变量优先级自动选择）
-- 当前后端支持的环境变量来源包括：`OPENAI_API_KEY`、`OPENROUTER_API_KEY`、`GEMINI_API_KEY` / `GOOGLE_API_KEY`、`GLM_API_KEY`、`KIMI_API_KEY`、`MINIMAX_API_KEY`、`OPENCODE_ZEN_API_KEY`、`OPENCODE_GO_API_KEY`、`HF_TOKEN`
-- LLM 返回必须是结构化 JSON，后端会校验节点/边/时间线引用是否合法
-- 如果 LLM 调用失败、返回非法 JSON，或者没有抽出有效节点，会自动回退到本地规则抽取
-- 响应里的 `extraction_mode` 会标记当前结果来自 `llm`、`rules` 或默认 `fallback`
+### `POST /extract`
 
-## 下一步可以怎么升级
+Request body:
 
-1. 支持在前端显示当前 `extraction_mode` 和错误提示
-2. 支持群组视图 / 按组织或项目聚类
-3. 支持上传 txt / md 文件
-4. 给时间线增加节点高亮联动
-5. 增加导出 JSON / PNG 图谱
+```json
+{"text":"张三上周加入电商项目，负责后端开发。"}
+```
+
+Response shape:
+
+```json
+{
+  "nodes": [],
+  "edges": [],
+  "timeline": [],
+  "extraction_mode": "rules",
+  "warnings": []
+}
+```
+
+`extraction_mode` indicates which extractor produced the result. `warnings` surfaces fallback and normalization issues without failing the request.
+
+## Quality Gates
+
+Backend:
+
+```bash
+cd backend
+uv sync --dev
+uv run ruff check .
+uv run mypy .
+uv run pytest -v
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm ci
+npm run lint
+npm run format:check
+npm test -- --run
+npm run build
+```
+
+## Repository Standards
+
+- Keep repo-level docs and CI in sync with the current architecture.
+- Prefer local development and verification before opening a pull request.
+- Do not commit secrets, local virtualenvs, node modules, or generated build output.
+
+See `CONTRIBUTING.md` for setup details and pull request expectations.
+
+## License
+
+MIT. See `LICENSE`.
