@@ -19,6 +19,7 @@ export function createGraphRenderer({
     }
 
     try {
+      graphEl.textContent = '';
       cy = cytoscapeImpl({
         container: graphEl,
         elements,
@@ -84,7 +85,6 @@ export function createGraphRenderer({
           renderDetail(detailEl, null);
         }
       });
-      graphEl.textContent = '';
     } catch {
       graphEl.textContent = data.nodes?.length ? '图谱已生成。' : '暂无图谱。';
     }
