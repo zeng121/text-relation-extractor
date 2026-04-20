@@ -6,9 +6,13 @@ export function renderDetail(detailEl, node) {
   }
 
   detailEl.className = 'card';
-  detailEl.innerHTML = `
-    <strong>${node.id}</strong><br />
-    类型：${node.type}<br />
-    描述：${node.description || '暂无'}
-  `;
+  detailEl.replaceChildren();
+
+  const titleEl = document.createElement('strong');
+  titleEl.textContent = node.id;
+  detailEl.append(titleEl);
+  detailEl.append(document.createElement('br'));
+  detailEl.append(`类型：${node.type}`);
+  detailEl.append(document.createElement('br'));
+  detailEl.append(`描述：${node.description || '暂无'}`);
 }

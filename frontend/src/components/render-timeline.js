@@ -6,15 +6,28 @@ export function renderTimeline(timelineEl, timeline = []) {
   }
 
   timelineEl.className = 'timeline';
-  timelineEl.innerHTML = timeline
-    .map(
-      (event) => `
-        <div class="timeline-item">
-          <div class="timeline-time">${event.time || '未标注时间'}</div>
-          <div><strong>${event.label}</strong></div>
-          <div class="timeline-detail">${event.detail || ''}</div>
-        </div>
-      `,
-    )
-    .join('');
+  timelineEl.replaceChildren();
+
+  timeline.forEach((event) => {
+    const itemEl = document.createElement('div');
+    itemEl.className = 'timeline-item';
+
+    const timeEl = document.createElement('div');
+    timeEl.className = 'timeline-time';
+    timeEl.textContent = event.time || '未标注时间';
+    itemEl.append(timeEl);
+
+    const labelRowEl = document.createElement('div');
+    const labelEl = document.createElement('strong');
+    labelEl.textContent = event.label;
+    labelRowEl.append(labelEl);
+    itemEl.append(labelRowEl);
+
+    const detailEl = document.createElement('div');
+    detailEl.className = 'timeline-detail';
+    detailEl.textContent = event.detail || '';
+    itemEl.append(detailEl);
+
+    timelineEl.append(itemEl);
+  });
 }
