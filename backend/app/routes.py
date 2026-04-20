@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request
 
-from extractor import extract_graph, extract_graph_rules
 from schemas import ExtractRequest, ExtractResponse
+from services.orchestrator import extract_graph
+from services.rule_extractor import extract_graph_rules
 
 health_router = APIRouter()
 extract_router = APIRouter()
