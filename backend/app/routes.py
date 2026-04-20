@@ -27,7 +27,8 @@ async def extract(payload: ExtractRequest, request: Request) -> ExtractResponse:
     result = orchestrator.extract(payload.text)
     if result.warnings:
         logger.warning(
-            "Extraction completed with warnings",
-            extra={"warnings": result.warnings, "extraction_mode": result.extraction_mode},
+            "Extraction completed with warnings extraction_mode=%s warnings=%s",
+            result.extraction_mode,
+            result.warnings,
         )
     return ExtractResponse.from_result(result)
