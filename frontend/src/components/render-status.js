@@ -26,6 +26,22 @@ function ensureWarningElement(doc, modeEl) {
   return warningEl;
 }
 
+function renderWarnings(warningEl, warnings, doc) {
+  warningEl.replaceChildren();
+
+  const titleEl = doc.createElement('strong');
+  titleEl.textContent = '告警：';
+  warningEl.append(titleEl);
+
+  const listEl = doc.createElement('ul');
+  warnings.forEach((warning) => {
+    const itemEl = doc.createElement('li');
+    itemEl.textContent = warning;
+    listEl.append(itemEl);
+  });
+  warningEl.append(listEl);
+}
+
 export function renderStatus(statusEl, state, { doc = document } = {}) {
   const modeEl = ensureModeElement(doc, statusEl);
   const warningEl = ensureWarningElement(doc, modeEl);
@@ -43,10 +59,5 @@ export function renderStatus(statusEl, state, { doc = document } = {}) {
   }
 
   warningEl.className = 'warning-list';
-  warningEl.innerHTML = `
-    <strong>告警：</strong>
-    <ul>
-      ${state.warnings.map((warning) => `<li>${warning}</li>`).join('')}
-    </ul>
-  `;
+  renderWarnings(warningEl, state.warnings, doc);
 }

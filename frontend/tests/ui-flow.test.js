@@ -180,6 +180,64 @@ describe('ui flow', () => {
     );
   });
 
+  it('clears extraction metadata when submitting an empty input after success', async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        nodes: [{ id: '张三', label: '张三', type: 'person' }],
+        edges: [],
+        timeline: [],
+        extraction_mode: 'hybrid',
+        warnings: ['部分关系来自推断'],
+      }),
+    }));
+
+    const app = createApp({ fetchImpl, graphRenderer: vi.fn() });
+    app.bootstrap();
+
+    document.getElementById('inputText').value = '张三加入项目';
+    document.getElementById('generateBtn').click();
+    await flushMicrotasks();
+
+    document.getElementById('inputText').value = '   ';
+    document.getElementById('generateBtn').click();
+    await flushMicrotasks();
+
+    expect(document.getElementById('status').textContent).toBe(
+      '先输入一点文本。',
+    );
+    expect(document.getElementById('modeBadge').textContent).toContain('-');
+    expect(document.getElementById('warningList').textContent).toContain(
+      '告警：无',
+    );
+  });
+
+  it('renders warnings as text instead of HTML', async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        nodes: [{ id: '张三', label: '张三', type: 'person' }],
+        edges: [],
+        timeline: [],
+        extraction_mode: 'hybrid',
+        warnings: ['<img src=x onerror=alert(1)> unsafe'],
+      }),
+    }));
+
+    const app = createApp({ fetchImpl, graphRenderer: vi.fn() });
+    app.bootstrap();
+
+    document.getElementById('inputText').value = '张三加入项目';
+    document.getElementById('generateBtn').click();
+    await flushMicrotasks();
+
+    const warningList = document.getElementById('warningList');
+    expect(warningList.textContent).toContain(
+      '<img src=x onerror=alert(1)> unsafe',
+    );
+    expect(warningList.querySelector('img')).toBeNull();
+  });
+
   it('binds example selector changes into input text', () => {
     const app = createApp({ fetchImpl: vi.fn(), graphRenderer: vi.fn() });
     app.bootstrap();

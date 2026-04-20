@@ -72,8 +72,12 @@ export function createApp({
     async function generateGraph() {
       const input = elements.inputText.value.trim();
       if (!input) {
-        elements.status.className = 'status status-error';
-        elements.status.textContent = '先输入一点文本。';
+        state = {
+          ...createInitialState(),
+          status: 'error',
+          message: '先输入一点文本。',
+        };
+        renderStatus(elements.status, state, { doc });
         return;
       }
 
