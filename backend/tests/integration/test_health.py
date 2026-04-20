@@ -1,20 +1,17 @@
-import httpx
-import pytest
+from fastapi.testclient import TestClient
 
 from schemas import ExtractResponse, Node
 
 
-@pytest.mark.anyio
-async def test_get_root_returns_backend_running_message(client: httpx.AsyncClient) -> None:
-    response = await client.get("/")
+def test_get_root_returns_backend_running_message(client: TestClient) -> None:
+    response = client.get("/")
 
     assert response.status_code == 200
     assert response.json() == {"message": "backend is running"}
 
 
-@pytest.mark.anyio
-async def test_post_extract_uses_existing_extraction_logic(client: httpx.AsyncClient) -> None:
-    response = await client.post("/extract", json={"text": "张三在字节跳动公司负责后端。"})
+def test_post_extract_uses_existing_extraction_logic(client: TestClient) -> None:
+    response = client.post("/extract", json={"text": "张三在字节跳动公司负责后端。"})
 
     assert response.status_code == 200
     payload = response.json()
@@ -26,11 +23,7 @@ async def test_post_extract_uses_existing_extraction_logic(client: httpx.AsyncCl
     assert all(edge["target"] in node_ids for edge in payload["edges"])
 
 
-@pytest.mark.anyio
-async def test_post_extract_respects_settings_and_skips_llm_path(
-    client: httpx.AsyncClient,
-    monkeypatch,
-) -> None:
+def test_post_extract_respects_settings_and_skips_llm_path(client: TestClient, monkeypatch) -> None:
     def _fake_llm_extract(_: str) -> ExtractResponse:
         return ExtractResponse(
             nodes=[Node(id="LLM", label="LLM", type="project")],
@@ -41,7 +34,7 @@ async def test_post_extract_respects_settings_and_skips_llm_path(
 
     monkeypatch.setattr("extractor.extract_graph_llm", _fake_llm_extract)
 
-    response = await client.post("/extract", json={"text": "张三在字节跳动公司负责后端。"})
+    response = client.post("/extract", json={"text": "张三在字节跳动公司负责后端。"})
 
     assert response.status_code == 200
     assert response.json()["extraction_mode"] == "rules"

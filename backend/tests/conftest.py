@@ -1,9 +1,9 @@
 import sys
-from collections.abc import AsyncGenerator
+from collections.abc import Generator
 from pathlib import Path
 
-import httpx
 import pytest
+from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -12,10 +12,6 @@ from app.settings import Settings
 
 
 @pytest.fixture
-async def client() -> AsyncGenerator[httpx.AsyncClient, None]:
-    transport = httpx.ASGITransport(app=create_app(settings=Settings(llm_enabled=False)))
-    async with httpx.AsyncClient(
-        transport=transport,
-        base_url="http://testserver",
-    ) as test_client:
+def client() -> Generator[TestClient, None, None]:
+    with TestClient(create_app(settings=Settings(llm_enabled=False))) as test_client:
         yield test_client
