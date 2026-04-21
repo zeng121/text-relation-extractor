@@ -1,6 +1,5 @@
-import { DEFAULT_GRAPH_DATA, EXAMPLES } from './utils/examples.js';
+import { DEFAULT_GRAPH_DATA, DEFAULT_INPUT_TEXT } from './utils/examples.js';
 import { extractGraphData } from './api/extract.js';
-import { bindExampleSelector } from './components/bind-examples.js';
 import { renderJson } from './components/render-json.js';
 import { renderStatus } from './components/render-status.js';
 import { renderTimeline } from './components/render-timeline.js';
@@ -13,7 +12,6 @@ import {
 
 function queryElements(doc) {
   return {
-    exampleSelect: doc.getElementById('exampleSelect'),
     inputText: doc.getElementById('inputText'),
     generateBtn: doc.getElementById('generateBtn'),
     status: doc.getElementById('status'),
@@ -26,7 +24,6 @@ function queryElements(doc) {
 
 function hasRequiredElements(elements) {
   return Boolean(
-    elements.exampleSelect &&
     elements.inputText &&
     elements.generateBtn &&
     elements.status &&
@@ -58,11 +55,7 @@ export function createApp({
         detailEl: elements.detailCard,
       });
 
-    bindExampleSelector({
-      selectEl: elements.exampleSelect,
-      inputEl: elements.inputText,
-      examples: EXAMPLES,
-    });
+    elements.inputText.value = DEFAULT_INPUT_TEXT;
 
     renderStatus(elements.status, state, { doc });
     renderGraph(DEFAULT_GRAPH_DATA);

@@ -2,7 +2,10 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_GRAPH_DATA, EXAMPLES } from '../src/utils/examples.js';
+import {
+  DEFAULT_GRAPH_DATA,
+  DEFAULT_INPUT_TEXT,
+} from '../src/utils/examples.js';
 import { createApp } from '../src/main.js';
 
 async function flushMicrotasks(times = 6) {
@@ -15,11 +18,26 @@ function createDom() {
   document.body.innerHTML = `
     <div class="app">
       <aside class="panel input-panel">
-        <select id="exampleSelect">
-          <option value="default">团队协作</option>
-          <option value="startup">创业项目</option>
-          <option value="campus">校园活动</option>
-        </select>
+        <textarea id="inputText"></textarea>
+        <button id="generateBtn">生成图谱</button>
+        <p id="status"></p>
+      </aside>
+      <main class="panel graph-panel"><div id="graph"></div></main>
+      <aside class="panel result-panel">
+        <div id="modeBadge"></div>
+        <div id="warningList"></div>
+        <div id="detailCard"></div>
+        <div id="timeline"></div>
+        <pre id="jsonOutput"></pre>
+      </aside>
+    </div>
+  `;
+}
+
+function createDomWithoutExampleSelect() {
+  document.body.innerHTML = `
+    <div class="app">
+      <aside class="panel input-panel">
         <textarea id="inputText"></textarea>
         <button id="generateBtn">生成图谱</button>
         <p id="status"></p>
@@ -238,22 +256,23 @@ describe('ui flow', () => {
     expect(warningList.querySelector('img')).toBeNull();
   });
 
-  it('binds example selector changes into input text', () => {
-    const app = createApp({ fetchImpl: vi.fn(), graphRenderer: vi.fn() });
+  it('boots without an example selector and still pre-fills the default text', () => {
+    createDomWithoutExampleSelect();
+    const graphRenderer = vi.fn();
+
+    const app = createApp({ fetchImpl: vi.fn(), graphRenderer });
     app.bootstrap();
 
-    const select = document.getElementById('exampleSelect');
-    select.value = 'startup';
-    select.dispatchEvent(new Event('change'));
-
-    expect(document.getElementById('inputText').value).toBe(EXAMPLES.startup);
+    expect(document.getElementById('exampleSelect')).toBeNull();
+    expect(document.getElementById('inputText').value).toBe(DEFAULT_INPUT_TEXT);
+    expect(graphRenderer).toHaveBeenCalledTimes(1);
   });
 
   it('uses the updated default example text', () => {
-    expect(EXAMPLES.default).toContain('2026年4月18日上午9点');
-    expect(EXAMPLES.default).toContain('Atlas 知识中台');
-    expect(EXAMPLES.default).toContain('NVIDIA H100 服务器');
-    expect(EXAMPLES.default).toContain('赵文杰确认接口规范');
+    expect(DEFAULT_INPUT_TEXT).toContain('2026年4月18日上午9点');
+    expect(DEFAULT_INPUT_TEXT).toContain('Atlas 知识中台');
+    expect(DEFAULT_INPUT_TEXT).toContain('NVIDIA H100 服务器');
+    expect(DEFAULT_INPUT_TEXT).toContain('赵文杰确认接口规范');
   });
 
   it('uses synced default graph data for the updated example', () => {
