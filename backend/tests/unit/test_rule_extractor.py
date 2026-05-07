@@ -69,6 +69,21 @@ def test_rule_extractor_preserves_meaningful_legacy_relationships_and_contract()
     )
 
 
+def test_rule_extractor_returns_metadata_quality_and_evidence() -> None:
+    text = "张三在字节跳动公司负责后端。"
+    result = rule_extractor_module.RegexRuleExtractor().extract(text)
+
+    assert result.metadata is not None
+    assert result.metadata.extraction_mode == "rules"
+    assert result.metadata.provider == "rules"
+    assert result.metadata.input_length == len(text)
+    assert result.quality.fallback_used is False
+    assert result.quality.warnings_count == 0
+    assert result.evidence
+    assert result.evidence[0].source == "input"
+    assert "张三" in result.evidence[0].text
+
+
 def test_extract_graph_wrapper_matches_route_fallback_warning_behavior(monkeypatch) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
 
@@ -79,6 +94,9 @@ def test_extract_graph_wrapper_matches_route_fallback_warning_behavior(monkeypat
 
     result = extract_graph("张三在字节跳动公司负责后端。")
 
-    assert result.extraction_mode == "rules"
+    assert result.extraction_mode == "fallback"
+    assert result.metadata is not None
+    assert result.metadata.extraction_mode == "fallback"
+    assert result.quality.fallback_used is True
     assert result.warnings
     assert "LLM extraction failed" in result.warnings[0]

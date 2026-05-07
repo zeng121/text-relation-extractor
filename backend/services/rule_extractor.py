@@ -3,8 +3,12 @@ from typing import Iterable, Protocol, cast
 
 from domain.models import (
     ExtractedEdge,
+    ExtractedEvidence,
     ExtractedNode,
     ExtractedTimelineEvent,
+    ExtractionMetadata,
+    ExtractionMode,
+    ExtractionQuality,
     ExtractionResult,
     NodeType,
 )
@@ -14,27 +18,31 @@ ROLE_KEYWORDS = ["后端", "前端", "产品", "运营", "设计", "数据分析
 ORG_SUFFIXES = ("公司", "集团", "大学", "学院", "团队", "平台", "科技", "协会")
 PROJECT_SUFFIXES = ("项目", "系统", "产品", "计划", "活动")
 
+EXAMPLE_NODES = [
+    ExtractedNode(id="张三", label="张三", type="person", description="后端工程师"),
+    ExtractedNode(id="字节跳动", label="字节跳动", type="organization", description="组织"),
+    ExtractedNode(id="电商项目", label="电商项目", type="project", description="项目"),
+    ExtractedNode(id="后端", label="后端", type="role", description="职责方向"),
+]
+EXAMPLE_EDGES = [
+    ExtractedEdge(source="张三", target="字节跳动", label="就职于"),
+    ExtractedEdge(source="张三", target="电商项目", label="参与"),
+    ExtractedEdge(source="张三", target="后端", label="负责"),
+]
+EXAMPLE_TIMELINE = [
+    ExtractedTimelineEvent(
+        id="t1",
+        label="张三参与电商项目",
+        time="上周",
+        detail="默认示例事件",
+        related_nodes=["张三", "电商项目"],
+    )
+]
+
 EXAMPLE_GRAPH = ExtractionResult(
-    nodes=[
-        ExtractedNode(id="张三", label="张三", type="person", description="后端工程师"),
-        ExtractedNode(id="字节跳动", label="字节跳动", type="organization", description="组织"),
-        ExtractedNode(id="电商项目", label="电商项目", type="project", description="项目"),
-        ExtractedNode(id="后端", label="后端", type="role", description="职责方向"),
-    ],
-    edges=[
-        ExtractedEdge(source="张三", target="字节跳动", label="就职于"),
-        ExtractedEdge(source="张三", target="电商项目", label="参与"),
-        ExtractedEdge(source="张三", target="后端", label="负责"),
-    ],
-    timeline=[
-        ExtractedTimelineEvent(
-            id="t1",
-            label="张三参与电商项目",
-            time="上周",
-            detail="默认示例事件",
-            related_nodes=["张三", "电商项目"],
-        )
-    ],
+    nodes=EXAMPLE_NODES,
+    edges=EXAMPLE_EDGES,
+    timeline=EXAMPLE_TIMELINE,
     extraction_mode="fallback",
 )
 
@@ -48,7 +56,13 @@ class RegexRuleExtractor:
     def extract(self, text: str) -> ExtractionResult:
         text = text.strip()
         if not text:
-            return EXAMPLE_GRAPH
+            return _build_rules_result(
+                nodes=EXAMPLE_NODES,
+                edges=EXAMPLE_EDGES,
+                timeline=EXAMPLE_TIMELINE,
+                text=text,
+                extraction_mode="fallback",
+            )
 
         nodes: list[ExtractedNode] = []
         edges: list[ExtractedEdge] = []
@@ -125,14 +139,64 @@ class RegexRuleExtractor:
 
         timeline = _extract_timeline(text, persons, projects)
         if not nodes:
-            return EXAMPLE_GRAPH
+            return _build_rules_result(
+                nodes=EXAMPLE_NODES,
+                edges=EXAMPLE_EDGES,
+                timeline=EXAMPLE_TIMELINE,
+                text=text,
+                extraction_mode="fallback",
+            )
 
-        return ExtractionResult(
+        return _build_rules_result(
             nodes=nodes,
             edges=edges,
             timeline=timeline,
-            extraction_mode="rules",
+            text=text,
         )
+
+
+def _build_rules_result(
+    *,
+    nodes: list[ExtractedNode],
+    edges: list[ExtractedEdge],
+    timeline: list[ExtractedTimelineEvent],
+    text: str,
+    extraction_mode: ExtractionMode = "rules",
+    warnings: list[str] | None = None,
+) -> ExtractionResult:
+    result_warnings = warnings or []
+    node_ids = {node.id for node in nodes}
+    return ExtractionResult(
+        nodes=nodes,
+        edges=edges,
+        timeline=timeline,
+        extraction_mode=extraction_mode,
+        warnings=result_warnings,
+        evidence=_build_rule_evidence(text, node_ids),
+        metadata=ExtractionMetadata(
+            extraction_mode=extraction_mode,
+            provider="rules",
+            input_length=len(text),
+        ),
+        quality=ExtractionQuality(
+            fallback_used=extraction_mode == "fallback",
+            warnings_count=len(result_warnings),
+        ),
+    )
+
+
+def _build_rule_evidence(text: str, node_ids: set[str]) -> list[ExtractedEvidence]:
+    sentence = text.strip()
+    if not sentence:
+        return []
+    return [
+        ExtractedEvidence(
+            id="ev-rules-1",
+            text=sentence[:240],
+            source="input",
+            target_ids=[node_id for node_id in node_ids if node_id in sentence],
+        )
+    ]
 
 
 def _unique(items: Iterable[str]) -> list[str]:

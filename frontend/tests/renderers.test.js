@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { renderDetail } from '../src/components/render-detail.js';
+import { renderJson } from '../src/components/render-json.js';
 import { renderTimeline } from '../src/components/render-timeline.js';
 import { createGraphRenderer } from '../src/graph/render-graph.js';
 
@@ -38,6 +39,25 @@ describe('renderers', () => {
     expect(timelineEl.textContent).toContain('<script>alert(1)</script>');
     expect(timelineEl.querySelector('img')).toBeNull();
     expect(timelineEl.querySelector('script')).toBeNull();
+  });
+
+  it('omits duplicate node labels from JSON display', () => {
+    const jsonEl = document.createElement('pre');
+
+    renderJson(jsonEl, {
+      nodes: [
+        { id: '张三', label: '张三', type: 'person' },
+        { id: '字节跳动', label: '字节跳动公司', type: 'organization' },
+      ],
+      edges: [],
+      timeline: [],
+    });
+
+    const rendered = JSON.parse(jsonEl.textContent);
+    expect(rendered.nodes).toEqual([
+      { id: '张三', type: 'person' },
+      { id: '字节跳动', label: '字节跳动公司', type: 'organization' },
+    ]);
   });
 
   it('keeps graph canvas mounted after Cytoscape initializes', () => {

@@ -35,4 +35,18 @@ class ExtractionOrchestrator:
                 "LLM extraction failed; fell back to rules "
                 f"({exc.__class__.__name__}: {exc})"
             )
-            return replace(rule_result, warnings=[*rule_result.warnings, warning])
+            metadata = rule_result.metadata
+            if metadata is None:
+                raise RuntimeError("Rule extraction result metadata must be populated")
+            warnings = [*rule_result.warnings, warning]
+            return replace(
+                rule_result,
+                extraction_mode="fallback",
+                warnings=warnings,
+                metadata=replace(metadata, extraction_mode="fallback", provider="rules"),
+                quality=replace(
+                    rule_result.quality,
+                    fallback_used=True,
+                    warnings_count=len(warnings),
+                ),
+            )

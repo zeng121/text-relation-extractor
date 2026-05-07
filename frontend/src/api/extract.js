@@ -11,6 +11,37 @@ function normalizeWarnings(input) {
     .filter((warning) => warning.length > 0);
 }
 
+function normalizeMetadata(input) {
+  if (!input || typeof input !== 'object') {
+    return null;
+  }
+
+  return {
+    extraction_mode:
+      typeof input.extraction_mode === 'string' ? input.extraction_mode : null,
+    provider: typeof input.provider === 'string' ? input.provider : null,
+    duration_ms: Number.isFinite(input.duration_ms) ? input.duration_ms : 0,
+    input_length: Number.isFinite(input.input_length) ? input.input_length : 0,
+  };
+}
+
+function normalizeQuality(input) {
+  const safeInput = input && typeof input === 'object' ? input : {};
+
+  return {
+    auto_created_nodes: Number.isFinite(safeInput.auto_created_nodes)
+      ? safeInput.auto_created_nodes
+      : 0,
+    dropped_items: Number.isFinite(safeInput.dropped_items)
+      ? safeInput.dropped_items
+      : 0,
+    fallback_used: safeInput.fallback_used === true,
+    warnings_count: Number.isFinite(safeInput.warnings_count)
+      ? safeInput.warnings_count
+      : 0,
+  };
+}
+
 export function normalizeExtractionResponse(payload) {
   const safePayload = payload ?? {};
 
@@ -18,6 +49,9 @@ export function normalizeExtractionResponse(payload) {
     nodes: Array.isArray(safePayload.nodes) ? safePayload.nodes : [],
     edges: Array.isArray(safePayload.edges) ? safePayload.edges : [],
     timeline: Array.isArray(safePayload.timeline) ? safePayload.timeline : [],
+    evidence: Array.isArray(safePayload.evidence) ? safePayload.evidence : [],
+    metadata: normalizeMetadata(safePayload.metadata),
+    quality: normalizeQuality(safePayload.quality),
     extraction_mode:
       typeof safePayload.extraction_mode === 'string'
         ? safePayload.extraction_mode

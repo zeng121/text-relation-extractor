@@ -10,3 +10,6 @@ def test_prompt_is_english_and_preserves_json_contract() -> None:
     ) in PROMPT
     assert "Every node referenced by any edge must also appear in nodes." in PROMPT
     assert "Before returning JSON, verify that there are no dangling edges." in PROMPT
+    assert '"evidence": [' in PROMPT
+    assert '"evidence_ids": ["ev-1"]' in PROMPT
+    assert "Do not include metadata or quality fields." in PROMPT

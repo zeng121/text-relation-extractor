@@ -14,6 +14,7 @@ export function toElements(data) {
       source: edge.source,
       target: edge.target,
       label: edge.label,
+      evidenceIds: Array.isArray(edge.evidence_ids) ? edge.evidence_ids : [],
     },
   }));
 

@@ -14,7 +14,14 @@ describe('toElements', () => {
         },
         { id: '字节跳动', label: '字节跳动', type: 'organization' },
       ],
-      edges: [{ source: '张三', target: '字节跳动', label: '就职于' }],
+      edges: [
+        {
+          source: '张三',
+          target: '字节跳动',
+          label: '就职于',
+          evidence_ids: ['ev-1'],
+        },
+      ],
     };
 
     expect(toElements(data)).toEqual([
@@ -40,6 +47,7 @@ describe('toElements', () => {
           source: '张三',
           target: '字节跳动',
           label: '就职于',
+          evidenceIds: ['ev-1'],
         },
       },
     ]);
