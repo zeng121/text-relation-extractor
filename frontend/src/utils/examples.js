@@ -78,7 +78,12 @@ export const DEFAULT_GRAPH_DATA = {
     },
   ],
   edges: [
-    { source: '李明', target: '星澜科技', label: '任职于' },
+    {
+      source: '李明',
+      target: '星澜科技',
+      label: '任职于',
+      evidence_ids: ['ev-default-1'],
+    },
     { source: '李明', target: 'Atlas 知识中台', label: '负责' },
     { source: '星澜科技', target: '复旦大学计算机学院', label: '联合推进' },
     { source: '周琪', target: 'Atlas 知识中台', label: '参与' },
@@ -97,6 +102,7 @@ export const DEFAULT_GRAPH_DATA = {
       time: '2026年4月18日上午9点',
       detail: '星澜科技在上海张江办公室召开 Atlas 知识中台项目周会。',
       related_nodes: ['星澜科技', 'Atlas 知识中台', '李明'],
+      evidence_ids: ['ev-default-1'],
     },
     {
       id: 't2',
@@ -121,4 +127,26 @@ export const DEFAULT_GRAPH_DATA = {
       related_nodes: ['陈雨', '赵文杰', '接口规范', '华东医院'],
     },
   ],
+  evidence: [
+    {
+      id: 'ev-default-1',
+      text: '项目负责人李明表示，该项目由星澜科技与复旦大学计算机学院联合推进。',
+      source: 'input',
+      target_ids: ['李明', '星澜科技', '复旦大学计算机学院', 'Atlas 知识中台'],
+    },
+  ],
+  metadata: {
+    extraction_mode: 'rules',
+    provider: 'example',
+    duration_ms: 0,
+    input_length: DEFAULT_INPUT_TEXT.length,
+  },
+  quality: {
+    auto_created_nodes: 0,
+    dropped_items: 0,
+    fallback_used: false,
+    warnings_count: 0,
+  },
+  extraction_mode: 'rules',
+  warnings: [],
 };

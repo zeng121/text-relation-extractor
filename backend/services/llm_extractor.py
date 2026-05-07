@@ -17,10 +17,13 @@ The response must use this format:
     {"id": "张三", "label": "张三", "type": "person", "description": "后端工程师"}
   ],
   "edges": [
-    {"source": "张三", "target": "字节跳动", "label": "就职于"}
+    {"source": "张三", "target": "字节跳动", "label": "就职于", "evidence_ids": ["ev-1"]}
   ],
   "timeline": [
-    {"id": "t1", "label": "加入项目", "time": "上周", "detail": "上周张三加入电商项目", "related_nodes": ["张三", "电商项目"]}
+    {"id": "t1", "label": "加入项目", "time": "上周", "detail": "上周张三加入电商项目", "related_nodes": ["张三", "电商项目"], "evidence_ids": ["ev-1"]}
+  ],
+  "evidence": [
+    {"id": "ev-1", "text": "上周张三加入电商项目", "source": "input", "target_ids": ["张三", "电商项目"]}
   ]
 }
 
@@ -30,10 +33,13 @@ Requirements:
 3. edges.source and edges.target must reference existing node ids.
 4. Every node referenced by any edge must also appear in nodes.
 5. Include non-person/non-organization entities when they participate in relationships, especially reports, specs, documents, hardware, resources, and deliverables.
-6. Before returning JSON, verify that there are no dangling edges.
-7. timeline may be an empty array if the input does not contain enough information.
-8. Extract concrete people, organizations, projects, roles, and related entities when supported by the text. Do not fabricate facts.
-9. Return JSON only.
+6. Evidence items must quote or closely paraphrase the input span that supports extracted nodes, edges, or timeline events.
+7. edges.evidence_ids, timeline.evidence_ids, and evidence.target_ids must reference ids that exist in this JSON response.
+8. Do not include metadata or quality fields.
+9. Before returning JSON, verify that there are no dangling edges.
+10. timeline may be an empty array if the input does not contain enough information.
+11. Extract concrete people, organizations, projects, roles, and related entities when supported by the text. Do not fabricate facts.
+12. Return JSON only.
 """.strip()
 
 

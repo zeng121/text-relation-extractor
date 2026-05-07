@@ -71,11 +71,41 @@ async def test_extract_falls_back_to_rules_with_warning_when_llm_fails(monkeypat
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["extraction_mode"] == "rules"
+    assert payload["extraction_mode"] == "fallback"
+    assert payload["metadata"]["extraction_mode"] == "fallback"
+    assert payload["quality"]["fallback_used"] is True
     assert payload["warnings"]
     assert "LLM extraction failed" in payload["warnings"][0]
     node_ids = {node["id"] for node in payload["nodes"]}
     assert node_ids >= {"张三", "字节跳动公司", "后端"}
+
+
+@pytest.mark.anyio
+async def test_extract_response_includes_analysis_contract_fields() -> None:
+    transport = httpx.ASGITransport(app=create_app(settings=Settings(llm_enabled=False)))
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="http://testserver",
+    ) as client:
+        response = await client.post("/extract", json={"text": "张三在字节跳动公司负责后端。"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert set(payload) >= {
+        "nodes",
+        "edges",
+        "timeline",
+        "evidence",
+        "metadata",
+        "quality",
+        "extraction_mode",
+        "warnings",
+    }
+    assert payload["metadata"]["extraction_mode"] == payload["extraction_mode"]
+    assert payload["metadata"]["provider"] == "rules"
+    assert payload["metadata"]["input_length"] == len("张三在字节跳动公司负责后端。")
+    assert payload["quality"]["fallback_used"] is False
+    assert payload["quality"]["warnings_count"] == len(payload["warnings"])
 
 
 def test_configure_logging_reconfigures_existing_handlers() -> None:
@@ -122,5 +152,5 @@ async def test_extract_fallback_log_contains_actionable_metadata(
     assert response.status_code == 200
     log_output = capsys.readouterr().err
     assert "Extraction completed with warnings" in log_output
-    assert "extraction_mode=rules" in log_output
+    assert "extraction_mode=fallback" in log_output
     assert "LLM extraction failed" in log_output

@@ -142,6 +142,7 @@ def test_normalize_llm_payload_returns_analysis_contract_fields() -> None:
 
     assert result.evidence[0].id == "ev-1"
     assert result.evidence[0].target_ids == ["李明"]
+    assert result.metadata is not None
     assert result.metadata.extraction_mode == "llm"
     assert result.metadata.provider == "llm"
     assert result.metadata.input_length == 0
