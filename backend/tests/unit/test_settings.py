@@ -40,11 +40,11 @@ def test_load_env_file_reads_api_key_from_dotenv(tmp_path, monkeypatch) -> None:
     assert settings.llm_enabled is True
 
 
-def test_load_env_file_does_not_override_shell_environment(tmp_path, monkeypatch) -> None:
+def test_load_env_file_overrides_shell_environment(tmp_path, monkeypatch) -> None:
     env_file = tmp_path / ".env"
     env_file.write_text("OPENAI_API_KEY=dotenv-key\n", encoding="utf-8")
     monkeypatch.setenv("OPENAI_API_KEY", "shell-key")
 
     settings_module.load_env_file(env_file)
 
-    assert settings_module.os.getenv("OPENAI_API_KEY") == "shell-key"
+    assert settings_module.os.getenv("OPENAI_API_KEY") == "dotenv-key"

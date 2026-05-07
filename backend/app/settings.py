@@ -34,7 +34,7 @@ def load_env_file(env_path: Path = DEFAULT_ENV_PATH) -> None:
         key = key.strip()
         value = value.strip().strip("\"'")
         if key:
-            os.environ.setdefault(key, value)
+            os.environ[key] = value
 
 
 def _has_any_llm_api_key() -> bool:
